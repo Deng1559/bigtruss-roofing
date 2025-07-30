@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-07-30T22:27:59.561Z",
+  "summary": {
+    "total": 17,
+    "passed": 14,
+    "failed": 3,
+    "successRate": "82.4"
+  },
+  "results": [
+    {
+      "name": "Node.js version",
+      "passed": true,
+      "details": "Node.js 18 or higher"
+    },
+    {
+      "name": "Package.json exists",
+      "passed": true,
+      "details": "package.json file"
+    },
+    {
+      "name": "N8N MCP Server file",
+      "passed": true,
+      "details": "n8n-mcp-server.js file"
+    },
+    {
+      "name": "Dependencies installed",
+      "passed": true,
+      "details": "node_modules directory"
+    },
+    {
+      "name": "Environment file example",
+      "passed": false,
+      "details": ".env.example file exists"
+    },
+    {
+      "name": "Setup wizard",
+      "passed": true,
+      "details": "setup-wizard.js exists"
+    },
+    {
+      "name": "Configuration schema",
+      "passed": true,
+      "details": "Configuration validation schema"
+    },
+    {
+      "name": "create_workflow tool",
+      "passed": "lead_capture",
+      "details": "Workflow creation logic"
+    },
+    {
+      "name": "analyze_lead_data tool",
+      "passed": true,
+      "details": "Lead analysis functionality"
+    },
+    {
+      "name": "monitor_automation_health tool",
+      "passed": true,
+      "details": "Health monitoring logic"
+    },
+    {
+      "name": "list_workflows tool",
+      "passed": true,
+      "details": "Workflow listing functionality"
+    },
+    {
+      "name": "High Priority Lead scoring",
+      "passed": false,
+      "details": "Score: 100 (expected ~85), Priority: High"
+    },
+    {
+      "name": "Medium Priority Lead scoring",
+      "passed": false,
+      "details": "Score: 70 (expected ~50), Priority: Medium"
+    },
+    {
+      "name": "Low Priority Lead scoring",
+      "passed": true,
+      "details": "Score: 25 (expected ~25), Priority: Low"
+    },
+    {
+      "name": "Yelp workflow generation",
+      "passed": true,
+      "details": "Valid Yelp workflow structure"
+    },
+    {
+      "name": "Lead capture workflow",
+      "passed": true,
+      "details": "Valid lead capture workflow"
+    },
+    {
+      "name": "Analytics workflow",
+      "passed": true,
+      "details": "Valid analytics workflow"
+    }
+  ]
+}

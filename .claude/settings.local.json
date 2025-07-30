@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(where git)",
+      "Bash(set CLAUDE_CODE_GIT_BASH_PATH=G:GithubGitbinbash.exe)",
+      "Bash(set CLAUDE_CODE_GIT_BASH_PATH=G:GithubGitusrbinbash.exe)",
+      "Bash(setx:*)",
+      "Bash(where claude)",
+      "Bash(cmd /c:*)",
+      "Bash(C:\\Users\\denni\\AppData\\Roaming\\npm\\claude.cmd --version)",
+      "Bash(powershell:*)"
+    ],
+    "deny": []
+  }
+}

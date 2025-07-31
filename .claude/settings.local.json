@@ -10,7 +10,10 @@
       "Bash(where claude)",
       "Bash(cmd /c:*)",
       "Bash(C:\\Users\\denni\\AppData\\Roaming\\npm\\claude.cmd --version)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(git -C \"G:\\AI - Coding Projects\\Jarvis\\BigTrussRoofing\" status)",
+      "Bash(git --git-dir=\"G:\\AI - Coding Projects\\Jarvis\\BigTrussRoofing\\.git\" --work-tree=\"G:\\AI - Coding Projects\\Jarvis\\BigTrussRoofing\" status)",
+      "Bash(npm run webhook:test:ghl:*)"
     ],
     "deny": []
   }

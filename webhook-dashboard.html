@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigTruss Webhook Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #28a745;
+            transition: transform 0.2s;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .status-card.error {
+            border-left-color: #dc3545;
+        }
+        
+        .status-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .status-card.warning .status-value {
+            color: #ffc107;
+        }
+        
+        .status-card.error .status-value {
+            color: #dc3545;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        
+        .tab.active {
+            background: white;
+            border-bottom: 3px solid #007bff;
+        }
+        
+        .tab:hover {
+            background: rgba(0,123,255,0.1);
+        }
+        
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .test-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+        
+        .result.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .result.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .endpoint-list {
+            list-style: none;
+        }
+        
+        .endpoint-list li {
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .endpoint-list .method {
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 10px;
+        }
+        
+        .endpoint-list .url {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+        
+        .loading {
+            display: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 BigTruss Webhook Dashboard</h1>
+            <p>Monitor and test your inbound webhook system</p>
+        </div>
+        
+        <div class="status-grid" id="statusGrid">
+            <div class="status-card">
+                <h3>Server Status</h3>
+                <div class="status-value" id="serverStatus">Checking...</div>
+                <small id="serverUptime">Uptime: --</small>
+            </div>
+            
+            <div class="status-card">
+                <h3>Total Requests</h3>
+                <div class="status-value" id="totalRequests">--</div>
+                <small id="successRate">Success Rate: --%</small>
+            </div>
+            
+            <div class="status-card">
+                <h3>GoHighLevel</h3>
+                <div class="status-value" id="ghlStatus">Checking...</div>
+                <small>Integration Status</small>
+            </div>
+            
+            <div class="status-card">
+                <h3>Last Activity</h3>
+                <div class="status-value" id="lastActivity">--</div>
+                <small>Minutes ago</small>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Overview</button>
+            <button class="tab" onclick="showTab('test')">Test Webhook</button>
+            <button class="tab" onclick="showTab('endpoints')">Endpoints</button>
+            <button class="tab" onclick="showTab('logs')">Live Logs</button>
+        </div>
+        
+        <div id="overview" class="tab-content active">
+            <h2>Webhook System Overview</h2>
+            <p>Your inbound webhook system is designed to receive leads from multiple sources and forward them to GoHighLevel.</p>
+            
+            <h3 style="margin-top: 30px;">📊 Current Metrics</h3>
+            <div id="metricsDisplay">
+                <p>Loading metrics...</p>
+            </div>
+            
+            <h3 style="margin-top: 30px;">🔗 Quick Links</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method">GET</span>
+                    <span class="url">http://localhost:3000/health</span>
+                    Health Check
+                    <button class="btn" onclick="openUrl('/health')" style="float: right;">Test</button>
+                </li>
+                <li>
+                    <span class="method">GET</span>
+                    <span class="url">http://localhost:3000/metrics</span>
+                    Detailed Metrics
+                    <button class="btn" onclick="openUrl('/metrics')" style="float: right;">View</button>
+                </li>
+            </ul>
+        </div>
+        
+        <div id="test" class="tab-content">
+            <h2>Test Your Webhooks</h2>
+            
+            <div class="test-form">
+                <h3>🧪 Send Test Lead</h3>
+                <form id="testForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="firstName" value="John" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="lastName" value="Smith" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" value="john.smith@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="phone" value="555-123-4567" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Service Type</label>
+                            <select id="serviceType">
+                                <option value="estimate">Estimate</option>
+                                <option value="repair">Repair</option>
+                                <option value="replacement">Replacement</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Source</label>
+                            <select id="source">
+                                <option value="test">Test</option>
+                                <option value="yelp">Yelp</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="google">Google</option>
+                                <option value="website">Website</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="address" value="123 Main Street, Anytown, CA 12345">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="notes" rows="3">Test lead from webhook dashboard. Please process as test.</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">Send Test Webhook</button>
+                    <span class="loading" id="testLoading">Sending...</span>
+                </form>
+                
+                <div id="testResult"></div>
+            </div>
+        </div>
+        
+        <div id="endpoints" class="tab-content">
+            <h2>Available Endpoints</h2>
+            <p>Your webhook server provides the following endpoints:</p>
+            
+            <h3>🏥 Health & Monitoring</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method">GET</span>
+                    <span class="url">/health</span>
+                    Server health check and status
+                </li>
+                <li>
+                    <span class="method">GET</span>
+                    <span class="url">/metrics</span>
+                    Performance metrics and statistics
+                </li>
+            </ul>
+            
+            <h3>📨 Webhook Receivers</h3>
+            <ul class="endpoint-list">
+                <li>
+                    <span class="method">POST</span>
+                    <span class="url">/webhook/yelp</span>
+                    Yelp lead capture webhook
+                </li>
+                <li>
+                    <span class="method">POST</span>
+                    <span class="url">/webhook/facebook</span>
+                    Facebook lead ads webhook
+                </li>
+                <li>
+                    <span class="method">POST</span>
+                    <span class="url">/webhook/google</span>
+                    Google Ads webhook
+                </li>
+                <li>
+                    <span class="method">POST</span>
+                    <span class="url">/webhook/website</span>
+                    Website form submissions
+                </li>
+                <li>
+                    <span class="method">POST</span>
+                    <span class="url">/webhook/test</span>
+                    Testing endpoint (doesn't forward to GHL)
+                </li>
+            </ul>
+            
+            <h3>📋 Usage Examples</h3>
+            <div class="code">
+# Test with cURL
+curl -X POST http://localhost:3000/webhook/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Smith",
+    "email": "john@example.com",
+    "phone": "555-123-4567",
+    "serviceType": "estimate"
+  }'
+
+# Check health
+curl http://localhost:3000/health
+
+# Get metrics
+curl http://localhost:3000/metrics
+            </div>
+        </div>
+        
+        <div id="logs" class="tab-content">
+            <h2>Live Activity</h2>
+            <p>Monitor real-time webhook activity and server logs.</p>
+            
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="refreshLogs()">Refresh Activity</button>
+                <button class="btn" onclick="clearLogs()">Clear</button>
+            </div>
+            
+            <div id="logsContainer" class="code" style="height: 400px; overflow-y: auto;">
+                <div id="logsList">
+                    <p>Activity logs will appear here when webhooks are received...</p>
+                    <p style="color: #7f8c8d;">Tip: Send a test webhook to see logs in real-time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for specific tabs
+            if (tabName === 'overview') {
+                loadMetrics();
+            }
+        }
+        
+        // Load server health and metrics
+        async function loadStatus() {
+            try {
+                const healthResponse = await fetch(`${BASE_URL}/health`);
+                const health = await healthResponse.json();
+                
+                document.getElementById('serverStatus').textContent = health.status === 'healthy' ? '🟢 Healthy' : '🔴 Error';
+                document.getElementById('serverUptime').textContent = `Uptime: ${Math.floor(health.uptime / 3600)}h ${Math.floor((health.uptime % 3600) / 60)}m`;
+                
+                if (health.metrics) {
+                    document.getElementById('totalRequests').textContent = health.metrics.totalRequests || 0;
+                    document.getElementById('successRate').textContent = `Success Rate: ${health.metrics.successRate || '0%'}`;
+                }
+                
+                // Update status card classes
+                const serverCard = document.getElementById('serverStatus').closest('.status-card');
+                serverCard.className = 'status-card ' + (health.status === 'healthy' ? '' : 'error');
+                
+            } catch (error) {
+                console.error('Failed to load status:', error);
+                document.getElementById('serverStatus').textContent = '🔴 Offline';
+                document.getElementById('serverStatus').closest('.status-card').className = 'status-card error';
+            }
+        }
+        
+        // Load detailed metrics
+        async function loadMetrics() {
+            try {
+                const response = await fetch(`${BASE_URL}/metrics`);
+                const data = await response.json();
+                
+                const metricsHtml = `
+                    <div class="code">
+${JSON.stringify(data, null, 2)}
+                    </div>
+                `;
+                
+                document.getElementById('metricsDisplay').innerHTML = metricsHtml;
+                
+            } catch (error) {
+                document.getElementById('metricsDisplay').innerHTML = '<p style="color: red;">Failed to load metrics. Make sure the server is running.</p>';
+            }
+        }
+        
+        // Test webhook form submission
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loading = document.getElementById('testLoading');
+            const resultDiv = document.getElementById('testResult');
+            
+            loading.style.display = 'inline';
+            resultDiv.innerHTML = '';
+            
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                serviceType: document.getElementById('serviceType').value,
+                address: document.getElementById('address').value,
+                notes: document.getElementById('notes').value,
+                source: document.getElementById('source').value,
+                forward: false // Don't forward test data to GHL
+            };
+            
+            try {
+                const response = await fetch(`${BASE_URL}/webhook/${formData.source}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                const resultHtml = `
+                    <div class="result ${result.success ? 'success' : 'error'}">
+                        <h4>${result.success ? '✅ Success!' : '❌ Failed'}</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Message:</strong> ${result.message || result.error}</p>
+                        ${result.requestId ? `<p><strong>Request ID:</strong> ${result.requestId}</p>` : ''}
+                        ${result.duration ? `<p><strong>Duration:</strong> ${result.duration}ms</p>` : ''}
+                        <div class="code">
+${JSON.stringify(result, null, 2)}
+                        </div>
+                    </div>
+                `;
+                
+                resultDiv.innerHTML = resultHtml;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Connection Error</h4>
+                        <p>Failed to connect to webhook server. Make sure it's running on port 3000.</p>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+            
+            loading.style.display = 'none';
+        });
+        
+        // Helper functions
+        function openUrl(path) {
+            window.open(`${BASE_URL}${path}`, '_blank');
+        }
+        
+        function refreshLogs() {
+            // In a real implementation, this would fetch recent logs
+            const logsList = document.getElementById('logsList');
+            logsList.innerHTML += `<p style="color: #3498db;">[${new Date().toLocaleTimeString()}] Logs refreshed - implement real log fetching</p>`;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logsList').innerHTML = '<p style="color: #7f8c8d;">Logs cleared. New activity will appear here.</p>';
+        }
+        
+        // Initialize dashboard
+        loadStatus();
+        
+        // Refresh status every 30 seconds
+        setInterval(loadStatus, 30000);
+    </script>
+</body>
+</html>

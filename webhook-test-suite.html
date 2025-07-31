@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoHighLevel Webhook Test Suite - BigTruss Roofing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .webhook-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .webhook-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .webhook-info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .mapping-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .mapping-table th,
+        .mapping-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .mapping-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #27ae60; }
+        .status-error { background: #e74c3c; }
+        .status-warning { background: #f39c12; }
+        .status-info { background: #3498db; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 GoHighLevel Webhook Integration</h1>
+            <p>BigTruss Roofing - Complete Testing & Management Suite</p>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('test')">🧪 Test Webhook</button>
+                <button class="tab" onclick="switchTab('form')">📝 Lead Form</button>
+                <button class="tab" onclick="switchTab('batch')">📊 Batch Process</button>
+                <button class="tab" onclick="switchTab('mapping')">🗺️ Field Mapping</button>
+                <button class="tab" onclick="switchTab('monitor')">📈 Monitor</button>
+            </div>
+            
+            <!-- Test Webhook Tab -->
+            <div id="test-tab" class="tab-content active">
+                <div class="webhook-info">
+                    <h3>🔗 Webhook Information</h3>
+                    <p><strong>Endpoint:</strong> <code id="webhook-url">Loading...</code></p>
+                    <p><strong>Method:</strong> <code>POST</code></p>
+                    <p><strong>Content-Type:</strong> <code>application/json</code></p>
+                    <p><strong>Status:</strong> <span class="status-indicator status-success"></span>Active</p>
+                </div>
+                
+                <button class="btn btn-success" onclick="testWebhook()">🚀 Quick Test</button>
+                <button class="btn btn-warning" onclick="testWithCustomData()">⚙️ Custom Test</button>
+                <button class="btn" onclick="validateWebhook()">✅ Validate Endpoint</button>
+                
+                <div id="test-results"></div>
+            </div>
+            
+            <!-- Lead Form Tab -->
+            <div id="form-tab" class="tab-content">
+                <h3>📋 Roofing Lead Form</h3>
+                <form id="lead-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label for="address">Property Address</label>
+                            <input type="text" id="address" name="address">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State</label>
+                            <select id="state" name="state">
+                                <option value="">Select State</option>
+                                <option value="CA">California</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                                <option value="NY">New York</option>
+                                <!-- Add more states as needed -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="propertyType">Property Type</label>
+                            <select id="propertyType" name="propertyType">
+                                <option value="residential">Residential</option>
+                                <option value="commercial">Commercial</option>
+                                <option value="industrial">Industrial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="serviceType">Service Needed</label>
+                            <select id="serviceType" name="serviceType">
+                                <option value="estimate">Free Estimate</option>
+                                <option value="repair">Roof Repair</option>
+                                <option value="replacement">Roof Replacement</option>
+                                <option value="inspection">Roof Inspection</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="emergency">Emergency Service</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label for="notes">Additional Notes</label>
+                            <textarea id="notes" name="notes" placeholder="Tell us about your roofing needs..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">📤 Submit Lead</button>
+                </form>
+                
+                <div id="form-results"></div>
+            </div>
+            
+            <!-- Batch Process Tab -->
+            <div id="batch-tab" class="tab-content">
+                <h3>📊 Batch Lead Processing</h3>
+                <p>Process multiple leads at once with automatic rate limiting.</p>
+                
+                <div class="form-group">
+                    <label for="batch-data">Lead Data (JSON Array)</label>
+                    <textarea id="batch-data" placeholder="Paste JSON array of lead objects here..." style="min-height: 200px;"></textarea>
+                </div>
+                
+                <button class="btn btn-success" onclick="processBatch()">🚀 Process Batch</button>
+                <button class="btn" onclick="loadSampleBatch()">📝 Load Sample Data</button>
+                
+                <div class="progress-bar" id="batch-progress" style="display: none;">
+                    <div class="progress-fill" id="batch-progress-fill"></div>
+                </div>
+                
+                <div id="batch-results"></div>
+            </div>
+            
+            <!-- Field Mapping Tab -->
+            <div id="mapping-tab" class="tab-content">
+                <h3>🗺️ Field Mapping Configuration</h3>
+                <p>Configure how your data fields map to GoHighLevel fields.</p>
+                
+                <table class="mapping-table">
+                    <thead>
+                        <tr>
+                            <th>Source Field</th>
+                            <th>GoHighLevel Field</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mapping-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+                
+                <button class="btn" onclick="exportMapping()">💾 Export Mapping</button>
+                <button class="btn btn-warning" onclick="resetMapping()">🔄 Reset to Default</button>
+            </div>
+            
+            <!-- Monitor Tab -->
+            <div id="monitor-tab" class="tab-content">
+                <h3>📈 Webhook Monitoring</h3>
+                <p>Real-time monitoring and analytics for your webhook integration.</p>
+                
+                <div class="form-row">
+                    <div class="webhook-info">
+                        <h4>📊 Statistics</h4>
+                        <p><strong>Total Requests:</strong> <span id="total-requests">0</span></p>
+                        <p><strong>Successful:</strong> <span id="successful-requests">0</span></p>
+                        <p><strong>Failed:</strong> <span id="failed-requests">0</span></p>
+                        <p><strong>Success Rate:</strong> <span id="success-rate">100%</span></p>
+                    </div>
+                    
+                    <div class="webhook-info">
+                        <h4>🕒 Recent Activity</h4>
+                        <div id="recent-activity">
+                            <p>No recent activity</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="refreshStats()">🔄 Refresh Stats</button>
+                <button class="btn btn-danger" onclick="clearStats()">🗑️ Clear Stats</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="gohighlevel-webhook-integration.js"></script>
+    <script>
+        // Initialize webhook integration
+        const webhook = new GoHighLevelWebhook();
+        
+        // Statistics tracking
+        let stats = {
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            recentActivity: []
+        };
+        
+        // Load stats from localStorage
+        function loadStats() {
+            const saved = localStorage.getItem('webhook-stats');
+            if (saved) {
+                stats = JSON.parse(saved);
+                updateStatsDisplay();
+            }
+        }
+        
+        // Save stats to localStorage
+        function saveStats() {
+            localStorage.setItem('webhook-stats', JSON.stringify(stats));
+        }
+        
+        // Update statistics display
+        function updateStatsDisplay() {
+            document.getElementById('total-requests').textContent = stats.totalRequests;
+            document.getElementById('successful-requests').textContent = stats.successfulRequests;
+            document.getElementById('failed-requests').textContent = stats.failedRequests;
+            
+            const successRate = stats.totalRequests > 0 
+                ? Math.round((stats.successfulRequests / stats.totalRequests) * 100) 
+                : 100;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            
+            // Update recent activity
+            const activityHtml = stats.recentActivity
+                .slice(0, 5)
+                .map(activity => `
+                    <p><span class="status-indicator status-${activity.success ? 'success' : 'error'}"></span>
+                    ${activity.timestamp} - ${activity.success ? 'Success' : 'Failed'}</p>
+                `).join('');
+            
+            document.getElementById('recent-activity').innerHTML = activityHtml || '<p>No recent activity</p>';
+        }
+        
+        // Record webhook activity
+        function recordActivity(success) {
+            stats.totalRequests++;
+            if (success) {
+                stats.successfulRequests++;
+            } else {
+                stats.failedRequests++;
+            }
+            
+            stats.recentActivity.unshift({
+                timestamp: new Date().toLocaleTimeString(),
+                success: success
+            });
+            
+            // Keep only last 10 activities
+            if (stats.recentActivity.length > 10) {
+                stats.recentActivity = stats.recentActivity.slice(0, 10);
+            }
+            
+            saveStats();
+            updateStatsDisplay();
+        }
+        
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Test webhook with sample data
+        async function testWebhook() {
+            const resultDiv = document.getElementById('test-results');
+            resultDiv.innerHTML = '<div class="result-info">Testing webhook...</div>';
+            
+            try {
+                const result = await webhook.testWebhook();
+                
+                const resultClass = result.success ? 'result-success' : 'result-error';
+                resultDiv.innerHTML = `
+                    <div class="${resultClass}">
+                        <h4>${result.success ? '✅ Test Successful!' : '❌ Test Failed'}</h4>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+                
+                recordActivity(result.success);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-error">
+                        <h4>❌ Test Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                recordActivity(false);
+            }
+        }
+        
+        // Test with custom data
+        async function testWithCustomData() {
+            const customData = prompt('Enter custom JSON data:', JSON.stringify({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'jane.doe@example.com',
+                phone: '555-987-6543',
+                serviceType: 'roof-replacement',
+                notes: 'Custom test data'
+            }, null, 2));
+            
+            if (!customData) return;
+            
+            const resultDiv = document.getElementById('test-results');
+            resultDiv.innerHTML = '<div class="result-info">Testing with custom data...</div>';
+            
+            try {
+                const data = JSON.parse(customData);
+                const result = await webhook.sendWebhook(data);
+                
+                const resultClass = result.success ? 'result-success' : 'result-error';
+                resultDiv.innerHTML = `
+                    <div class="${resultClass}">
+                        <h4>${result.success ? '✅ Custom Test Successful!' : '❌ Custom Test Failed'}</h4>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+                
+                recordActivity(result.success);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-error">
+                        <h4>❌ Invalid JSON or Test Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                recordActivity(false);
+            }
+        }
+        
+        // Validate webhook endpoint
+        async function validateWebhook() {
+            const resultDiv = document.getElementById('test-results');
+            const info = webhook.getWebhookInfo();
+            
+            resultDiv.innerHTML = `
+                <div class="result-info">
+                    <h4>🔍 Webhook Validation</h4>
+                    <pre>${JSON.stringify(info, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        // Handle form submission
+        document.getElementById('lead-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('form-results');
+            
+            resultDiv.innerHTML = '<div class="result-info">Submitting lead...</div>';
+            
+            try {
+                const result = await webhook.processFormSubmission(formData);
+                
+                const resultClass = result.success ? 'result-success' : 'result-error';
+                resultDiv.innerHTML = `
+                    <div class="${resultClass}">
+                        <h4>${result.success ? '✅ Lead Submitted Successfully!' : '❌ Lead Submission Failed'}</h4>
+                        <p>${result.success ? 'Your roofing inquiry has been sent to our team.' : result.error}</p>
+                        <details>
+                            <summary>View Details</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                
+                if (result.success) {
+                    this.reset();
+                }
+                
+                recordActivity(result.success);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-error">
+                        <h4>❌ Submission Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                recordActivity(false);
+            }
+        });
+        
+        // Load sample batch data
+        function loadSampleBatch() {
+            const sampleData = [
+                {
+                    firstName: 'John',
+                    lastName: 'Smith',
+                    email: 'john.smith@example.com',
+                    phone: '555-123-4567',
+                    serviceType: 'estimate',
+                    propertyType: 'residential'
+                },
+                {
+                    firstName: 'Sarah',
+                    lastName: 'Johnson',
+                    email: 'sarah.j@example.com',
+                    phone: '555-234-5678',
+                    serviceType: 'repair',
+                    propertyType: 'commercial'
+                },
+                {
+                    firstName: 'Mike',
+                    lastName: 'Brown',
+                    email: 'mike.brown@example.com',
+                    phone: '555-345-6789',
+                    serviceType: 'replacement',
+                    propertyType: 'residential'
+                }
+            ];
+            
+            document.getElementById('batch-data').value = JSON.stringify(sampleData, null, 2);
+        }
+        
+        // Process batch leads
+        async function processBatch() {
+            const batchData = document.getElementById('batch-data').value;
+            const resultDiv = document.getElementById('batch-results');
+            const progressBar = document.getElementById('batch-progress');
+            const progressFill = document.getElementById('batch-progress-fill');
+            
+            if (!batchData.trim()) {
+                resultDiv.innerHTML = '<div class="result-error">Please enter batch data</div>';
+                return;
+            }
+            
+            try {
+                const leads = JSON.parse(batchData);
+                if (!Array.isArray(leads)) {
+                    throw new Error('Data must be an array of lead objects');
+                }
+                
+                progressBar.style.display = 'block';
+                resultDiv.innerHTML = '<div class="result-info">Processing batch...</div>';
+                
+                const results = await webhook.batchProcess(leads, {
+                    delay: 1000 // 1 second delay between requests
+                });
+                
+                // Update progress
+                progressFill.style.width = '100%';
+                
+                // Display results
+                const successCount = results.filter(r => r.result.success).length;
+                const failCount = results.length - successCount;
+                
+                let resultHtml = `
+                    <div class="result-${successCount === results.length ? 'success' : 'warning'}">
+                        <h4>📊 Batch Processing Complete</h4>
+                        <p><strong>Total:</strong> ${results.length} leads</p>
+                        <p><strong>Successful:</strong> ${successCount}</p>
+                        <p><strong>Failed:</strong> ${failCount}</p>
+                        <details>
+                            <summary>View Details</summary>
+                            <pre>${JSON.stringify(results, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                
+                resultDiv.innerHTML = resultHtml;
+                
+                // Update stats
+                results.forEach(r => recordActivity(r.result.success));
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result-error">
+                        <h4>❌ Batch Processing Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 2000);
+            }
+        }
+        
+        // Initialize field mapping table
+        function initializeMapping() {
+            const mappings = [
+                { source: 'firstName', ghl: 'firstName', type: 'String', required: true, example: 'John' },
+                { source: 'lastName', ghl: 'lastName', type: 'String', required: true, example: 'Smith' },
+                { source: 'email', ghl: 'email', type: 'Email', required: true, example: 'john@example.com' },
+                { source: 'phone', ghl: 'phone', type: 'Phone', required: true, example: '555-123-4567' },
+                { source: 'address', ghl: 'address', type: 'String', required: false, example: '123 Main St' },
+                { source: 'city', ghl: 'city', type: 'String', required: false, example: 'Anytown' },
+                { source: 'state', ghl: 'state', type: 'String', required: false, example: 'CA' },
+                { source: 'propertyType', ghl: 'propertyType', type: 'Select', required: false, example: 'residential' },
+                { source: 'serviceType', ghl: 'serviceType', type: 'Select', required: false, example: 'estimate' }
+            ];
+            
+            const tbody = document.getElementById('mapping-table-body');
+            tbody.innerHTML = mappings.map(m => `
+                <tr>
+                    <td><code>${m.source}</code></td>
+                    <td><code>${m.ghl}</code></td>
+                    <td>${m.type}</td>
+                    <td>${m.required ? '✅' : '⭕'}</td>
+                    <td><em>${m.example}</em></td>
+                </tr>
+            `).join('');
+        }
+        
+        // Export mapping configuration
+        function exportMapping() {
+            const mapping = webhook.mapData({});
+            const blob = new Blob([JSON.stringify(mapping, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ghl-field-mapping.json';
+            a.click();
+        }
+        
+        // Reset mapping to default
+        function resetMapping() {
+            if (confirm('Reset field mapping to default configuration?')) {
+                initializeMapping();
+            }
+        }
+        
+        // Refresh statistics
+        function refreshStats() {
+            updateStatsDisplay();
+        }
+        
+        // Clear statistics
+        function clearStats() {
+            if (confirm('Clear all statistics? This cannot be undone.')) {
+                stats = {
+                    totalRequests: 0,
+                    successfulRequests: 0,
+                    failedRequests: 0,
+                    recentActivity: []
+                };
+                saveStats();
+                updateStatsDisplay();
+            }
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display webhook URL
+            document.getElementById('webhook-url').textContent = webhook.webhookUrl;
+            
+            // Initialize mapping table
+            initializeMapping();
+            
+            // Load saved statistics
+            loadStats();
+        });
+    </script>
+</body>
+</html>

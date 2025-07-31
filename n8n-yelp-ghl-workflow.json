@@ -1,0 +1,213 @@
+{
+  "name": "Yelp to GoHighLevel Lead Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute",
+              "minute": 15
+            }
+          ]
+        },
+        "folder": "INBOX",
+        "format": "resolved",
+        "simple": false,
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "ignored": "read"
+        },
+        "filters": {
+          "sender": "yelp.com,noreply@yelp.com"
+        }
+      },
+      "id": "1a8b9c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmail-oauth-credential",
+          "name": "Gmail OAuth2 - BigTruss"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse Yelp email content for lead data\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const emailData = item.json;\n  const subject = emailData.subject || '';\n  const textPlain = emailData.textPlain || emailData.snippet || '';\n  const htmlContent = emailData.textHtml || '';\n  \n  // Extract customer information\n  const extractCustomerInfo = (content) => {\n    // Extract name (look for \"From:\" or similar patterns)\n    const namePatterns = [\n      /From:\\s*([^<\\n\\r]+?)(?:\\s*<|\\n|\\r|$)/i,\n      /Name:\\s*([^\\n\\r]+)/i,\n      /([A-Z][a-z]+ [A-Z][a-z]+)/\n    ];\n    \n    let customerName = 'Yelp Customer';\n    for (const pattern of namePatterns) {\n      const match = content.match(pattern);\n      if (match && match[1]) {\n        customerName = match[1].trim();\n        break;\n      }\n    }\n    \n    // Extract email\n    const emailMatch = content.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4})/);\n    const customerEmail = emailMatch ? emailMatch[1] : 'yelp-lead@bigtrussroofing.com';\n    \n    // Extract phone\n    const phoneMatch = content.match(/(\\(?[0-9]{3}\\)?[-. ]?[0-9]{3}[-. ]?[0-9]{4})/);\n    const customerPhone = phoneMatch ? phoneMatch[1] : '';\n    \n    // Determine service type\n    const lowerContent = content.toLowerCase();\n    let serviceType = 'roof_cleaning';\n    if (lowerContent.includes('gutter')) serviceType = 'gutter_cleaning';\n    else if (lowerContent.includes('pressure') || lowerContent.includes('washing')) serviceType = 'pressure_washing';\n    else if (lowerContent.includes('moss')) serviceType = 'moss_removal';\n    \n    // Determine urgency\n    let urgency = 'normal';\n    if (lowerContent.includes('urgent') || lowerContent.includes('asap') || lowerContent.includes('emergency')) {\n      urgency = 'urgent';\n    } else if (lowerContent.includes('soon') || lowerContent.includes('quickly')) {\n      urgency = 'high';\n    }\n    \n    const nameParts = customerName.split(' ');\n    \n    return {\n      firstName: nameParts[0] || 'Yelp',\n      lastName: nameParts.slice(1).join(' ') || 'Customer',\n      email: customerEmail,\n      phone: customerPhone,\n      serviceType,\n      urgency\n    };\n  };\n  \n  const customerInfo = extractCustomerInfo(textPlain + ' ' + htmlContent);\n  \n  // Build lead data for GoHighLevel\n  const leadData = {\n    firstName: customerInfo.firstName,\n    lastName: customerInfo.lastName,\n    email: customerInfo.email,\n    phone: customerInfo.phone,\n    address: '',\n    city: 'Vancouver',\n    state: 'BC',\n    postalCode: '',\n    country: 'CA',\n    \n    // Service information\n    propertyType: 'residential',\n    serviceType: customerInfo.serviceType,\n    urgency: customerInfo.urgency,\n    preferredContactTime: 'anytime',\n    \n    // Marketing attribution\n    source: 'yelp',\n    medium: 'email_notification',\n    campaign: 'yelp_n8n_automation',\n    \n    // Lead content\n    notes: `YELP LEAD\\n\\nSubject: ${subject}\\n\\nMessage:\\n${textPlain}`,\n    \n    // Tags for GoHighLevel\n    tags: [\n      'yelp-lead',\n      'n8n-automation',\n      customerInfo.serviceType,\n      customerInfo.urgency === 'urgent' ? 'hot-lead' : 'warm-lead'\n    ],\n    \n    // Custom fields\n    customFields: {\n      lead_source_detail: 'Yelp Email Notification',\n      capture_method: 'n8n_automation',\n      original_subject: subject,\n      email_received_date: emailData.date || new Date().toISOString(),\n      automation_version: '1.0',\n      lead_score: customerInfo.urgency === 'urgent' ? 95 : (customerInfo.phone ? 85 : 75),\n      estimated_value: customerInfo.serviceType === 'gutter_cleaning' ? 400 : \n                      customerInfo.serviceType === 'pressure_washing' ? 600 : 800\n    },\n    \n    // Timestamps\n    submissionTime: new Date().toISOString(),\n    userAgent: 'n8n-BigTruss-Automation'\n  };\n  \n  results.push({\n    json: leadData,\n    originalEmail: emailData\n  });\n}\n\nreturn results;"
+      },
+      "id": "2b9c0d3e-4f5a-6b7c-8d9e-0f1a2b3c4d5e",
+      "name": "Parse Yelp Email",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://services.leadconnectorhq.com/hooks/Ww1psuATtTQNf3cOMAHl/webhook-trigger/555dfe89-e7c6-412f-ae25-83cdb059290e",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "BigTruss-n8n-YelpAutomation/1.0"
+            },
+            {
+              "name": "X-Source",
+              "value": "yelp-n8n-automation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "jsonParameters": "={{ $json }}",
+        "options": {}
+      },
+      "id": "3c0d1e2f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "name": "Send to GoHighLevel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equal",
+              "value2": "200"
+            }
+          ]
+        }
+      },
+      "id": "4d1e2f3a-6b7c-8d9e-0f1a-2b3c4d5e6f7a",
+      "name": "Check Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "to": "tim@bigtrussroofcleaning.com",
+        "subject": "🎯 NEW YELP LEAD: {{ $node['Parse Yelp Email'].json.firstName }} {{ $node['Parse Yelp Email'].json.lastName }}",
+        "emailType": "html",
+        "message": "<h2>🚨 New Yelp Lead Captured!</h2>\n\n<div style=\"background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n  <h3>👤 Customer Information</h3>\n  <p><strong>Name:</strong> {{ $node['Parse Yelp Email'].json.firstName }} {{ $node['Parse Yelp Email'].json.lastName }}</p>\n  <p><strong>Email:</strong> {{ $node['Parse Yelp Email'].json.email }}</p>\n  <p><strong>Phone:</strong> {{ $node['Parse Yelp Email'].json.phone || 'Not provided' }}</p>\n  <p><strong>Service:</strong> {{ $node['Parse Yelp Email'].json.serviceType }}</p>\n  <p><strong>Urgency:</strong> {{ $node['Parse Yelp Email'].json.urgency }}</p>\n</div>\n\n<div style=\"background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n  <h3>📧 Original Message</h3>\n  <p><strong>Subject:</strong> {{ $node['Parse Yelp Email'].json.customFields.original_subject }}</p>\n  <div style=\"background: white; padding: 15px; border-radius: 4px; margin-top: 10px;\">\n    {{ $node['Parse Yelp Email'].json.notes }}\n  </div>\n</div>\n\n<div style=\"background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n  <h3>📊 Lead Analytics</h3>\n  <p><strong>Lead Score:</strong> {{ $node['Parse Yelp Email'].json.customFields.lead_score }}/100</p>\n  <p><strong>Estimated Value:</strong> ${{ $node['Parse Yelp Email'].json.customFields.estimated_value }}</p>\n  <p><strong>Source:</strong> Yelp Email Notification</p>\n  <p><strong>Captured:</strong> {{ $now }}</p>\n</div>\n\n<div style=\"text-align: center; margin: 30px 0;\">\n  <a href=\"tel:{{ $node['Parse Yelp Email'].json.phone }}\" \n     style=\"background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;\">\n    📞 Call {{ $node['Parse Yelp Email'].json.firstName }} Now\n  </a>\n</div>\n\n<hr style=\"margin: 30px 0;\">\n<p style=\"font-size: 12px; color: #666;\">This lead was automatically captured and processed by your n8n Yelp automation system.</p>",
+        "options": {}
+      },
+      "id": "5e2f3a4b-7c8d-9e0f-1a2b-3c4d5e6f7a8b",
+      "name": "Email Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        200
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP - BigTruss"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"status\": \"error\",\n  \"message\": \"Failed to send lead to GoHighLevel\",\n  \"leadData\": {{ $node['Parse Yelp Email'].json }},\n  \"error\": {{ $json }},\n  \"timestamp\": \"{{ $now }}\"\n}",
+        "options": {}
+      },
+      "id": "6f3a4b5c-8d9e-0f1a-2b3c-4d5e6f7a8b9c",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Yelp Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Yelp Email": {
+      "main": [
+        [
+          {
+            "node": "Send to GoHighLevel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to GoHighLevel": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success": {
+      "main": [
+        [
+          {
+            "node": "Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "timezone": "America/Vancouver"
+  },
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "bigtruss-yelp-automation"
+  }
+}

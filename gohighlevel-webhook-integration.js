@@ -269,7 +269,13 @@ class GoHighLevelWebhook {
     }
 }
 
-// Export for Node.js environments
+// ES module export (default)
+export default GoHighLevelWebhook;
+
+// Named export for compatibility
+export { GoHighLevelWebhook };
+
+// Export for Node.js environments (CommonJS)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = GoHighLevelWebhook;
 }

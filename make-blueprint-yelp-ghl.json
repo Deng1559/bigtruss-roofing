@@ -1,0 +1,178 @@
+{
+  "name": "Yelp to GoHighLevel Lead Automation",
+  "description": "Monitors Gmail for Yelp notifications and sends leads to GoHighLevel CRM",
+  "version": "1.0",
+  "modules": [
+    {
+      "id": 1,
+      "module": "gmail.WatchEmails",
+      "version": 1,
+      "parameters": {
+        "folder": "INBOX",
+        "maxResults": 10,
+        "criteria": {
+          "from": "yelp.com",
+          "subject": "Big Truss"
+        }
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "util.TextParser",
+      "version": 1,
+      "parameters": {
+        "pattern": "customer_name",
+        "text": "{{1.textPlain}}",
+        "global": false
+      },
+      "mapper": {
+        "pattern": "From:\\s*([^<\\n]+)",
+        "text": "{{1.textPlain}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "util.TextParser", 
+      "version": 1,
+      "parameters": {
+        "pattern": "email_pattern",
+        "text": "{{1.textPlain}}",
+        "global": false
+      },
+      "mapper": {
+        "pattern": "([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})",
+        "text": "{{1.textPlain}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 4,
+      "module": "util.TextParser",
+      "version": 1, 
+      "parameters": {
+        "pattern": "phone_pattern",
+        "text": "{{1.textPlain}}",
+        "global": false
+      },
+      "mapper": {
+        "pattern": "\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})",
+        "text": "{{1.textPlain}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 900,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 5,
+      "module": "http.ActionSendData",
+      "version": 3,
+      "parameters": {},
+      "mapper": {
+        "url": "https://services.leadconnectorhq.com/hooks/Ww1psuATtTQNf3cOMAHl/webhook-trigger/555dfe89-e7c6-412f-ae25-83cdb059290e",
+        "method": "post",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "name": "User-Agent", 
+            "value": "BigTruss-Make-Automation/1.0"
+          }
+        ],
+        "qs": [],
+        "bodyType": "json",
+        "body": {
+          "firstName": "{{split(2.group; \" \")[0]}}",
+          "lastName": "{{split(2.group; \" \")[1]}}",
+          "email": "{{3.group}}",
+          "phone": "{{4.group}}",
+          "notes": "Lead from Yelp: {{1.textPlain}}",
+          "source": "yelp",
+          "medium": "email_notification",
+          "campaign": "yelp_automation",
+          "tags": ["yelp-lead", "email-capture", "roof-cleaning"],
+          "serviceType": "roof_cleaning",
+          "propertyType": "residential",
+          "urgency": "high",
+          "customFields": {
+            "lead_source_detail": "Yelp Email Notification",
+            "capture_method": "make_automation", 
+            "original_subject": "{{1.subject}}"
+          }
+        }
+      },
+      "metadata": {
+        "designer": {
+          "x": 1200,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": 1,
+      "srcModuleId": 1,
+      "srcPortId": 1,
+      "dstModuleId": 2,
+      "dstPortId": 1
+    },
+    {
+      "id": 2, 
+      "srcModuleId": 1,
+      "srcPortId": 1,
+      "dstModuleId": 3,
+      "dstPortId": 1
+    },
+    {
+      "id": 3,
+      "srcModuleId": 1, 
+      "srcPortId": 1,
+      "dstModuleId": 4,
+      "dstPortId": 1
+    },
+    {
+      "id": 4,
+      "srcModuleId": 2,
+      "srcPortId": 1, 
+      "dstModuleId": 5,
+      "dstPortId": 1
+    },
+    {
+      "id": 5,
+      "srcModuleId": 3,
+      "srcPortId": 1,
+      "dstModuleId": 5, 
+      "dstPortId": 1
+    },
+    {
+      "id": 6,
+      "srcModuleId": 4,
+      "srcPortId": 1,
+      "dstModuleId": 5,
+      "dstPortId": 1
+    }
+  ]
+}

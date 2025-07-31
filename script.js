@@ -13,7 +13,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Quote form submission with multiple integration options
-document.getElementById('quote-form').addEventListener('submit', function(e) {
+function setupFormHandler(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return; // Form doesn't exist on this page
+    
+    form.addEventListener('submit', function(e) {
     e.preventDefault();
     
     // Get form data
@@ -53,7 +57,8 @@ document.getElementById('quote-form').addEventListener('submit', function(e) {
     
     // Reset form
     this.reset();
-});
+    });
+}
 
 // Make.com Integration (RECOMMENDED)
 function submitToMakecom(data) {
@@ -728,9 +733,12 @@ function trackPhoneCall(phoneNumber) {
 }
 
 // Add loading states and form validation
-function addFormValidation() {
-    const form = document.getElementById('quote-form');
+function addFormValidation(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return; // Form doesn't exist on this page
+    
     const submitBtn = form.querySelector('button[type="submit"]');
+    if (!submitBtn) return;
     
     form.addEventListener('submit', function() {
         submitBtn.disabled = true;
@@ -748,13 +756,68 @@ function addFormValidation() {
 
 // Enhanced initialization
 document.addEventListener('DOMContentLoaded', function() {
-    addFormValidation();
+    // Setup form handlers for both index and contact pages
+    setupFormHandler('quote-form');          // Index page form
+    setupFormHandler('contact-quote-form');  // Contact page form
+    
+    // Setup form validation for both forms
+    addFormValidation('quote-form');
+    addFormValidation('contact-quote-form');
+    
     initializeMcpIntegration(); // NEW: Initialize MCP integration
+    handleFaqDeepLinks(); // Initialize FAQ deep linking
     console.log('Big Truss Roof Cleaning - Landing Page Loaded with Enhanced N8n/MCP Integration');
     
     // NEW: Periodic health checks
     setInterval(checkMcpServerHealth, 300000); // Check every 5 minutes
 });
+
+// FAQ Toggle Functionality
+function toggleFaq(element) {
+    const answer = element.nextElementSibling;
+    const icon = element.querySelector('i');
+    const allQuestions = document.querySelectorAll('.faq-question');
+    const allAnswers = document.querySelectorAll('.faq-answer');
+    
+    // Close all other FAQs
+    allQuestions.forEach(q => {
+        if (q !== element) {
+            q.classList.remove('active');
+        }
+    });
+    allAnswers.forEach(a => {
+        if (a !== answer) {
+            a.classList.remove('active');
+        }
+    });
+    
+    // Toggle current FAQ
+    element.classList.toggle('active');
+    answer.classList.toggle('active');
+    
+    // Track FAQ interactions for analytics
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'faq_interaction', {
+            'event_category': 'User Engagement',
+            'event_label': element.querySelector('h3').textContent.trim(),
+            'value': element.classList.contains('active') ? 1 : 0
+        });
+    }
+}
+
+// Auto-expand FAQ based on URL hash
+function handleFaqDeepLinks() {
+    if (window.location.hash && window.location.hash.startsWith('#faq-')) {
+        const faqIndex = parseInt(window.location.hash.replace('#faq-', '')) - 1;
+        const faqQuestions = document.querySelectorAll('.faq-question');
+        if (faqQuestions[faqIndex]) {
+            setTimeout(() => {
+                toggleFaq(faqQuestions[faqIndex]);
+                faqQuestions[faqIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+    }
+}
 
 // NEW: Export functions for MCP server testing
 if (typeof window !== 'undefined') {
@@ -762,6 +825,7 @@ if (typeof window !== 'undefined') {
         sendToMcpServer,
         calculateLeadScore,
         determineUrgency,
-        checkMcpServerHealth
+        checkMcpServerHealth,
+        toggleFaq // Add FAQ function to exports
     };
 } 

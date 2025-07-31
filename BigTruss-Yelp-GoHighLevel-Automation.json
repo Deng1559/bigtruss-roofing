@@ -1,0 +1,66 @@
+{
+  "name": "Yelp to GoHighLevel Automation",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gmail:WatchEmails",
+      "version": 1,
+      "parameters": {
+        "folder": "INBOX",
+        "maxResults": 10,
+        "criteria": "from:yelp.com"
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {},
+      "mapper": {
+        "url": "https://services.leadconnectorhq.com/hooks/Ww1psuATtTQNf3cOMAHl/webhook-trigger/555dfe89-e7c6-412f-ae25-83cdb059290e",
+        "method": "post",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "bodyType": "json",
+        "body": {
+          "firstName": "{{1.from}}",
+          "lastName": "Customer",
+          "email": "yelp-lead@bigtrussroofing.com",
+          "phone": "",
+          "notes": "Yelp Lead: {{1.subject}} - {{1.textPlain}}",
+          "source": "yelp",
+          "medium": "email_automation",
+          "tags": ["yelp-lead", "make-automation"],
+          "serviceType": "roof_cleaning",
+          "urgency": "high"
+        }
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": 1,
+      "srcModuleId": 1,
+      "srcPortId": 1,
+      "dstModuleId": 2,
+      "dstPortId": 1
+    }
+  ]
+}
